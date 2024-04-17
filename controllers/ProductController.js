@@ -55,7 +55,7 @@ export const getProductController = async (req, res) => {
   try {
     const products = await ProductModel.find({})
       .populate("category")
-      .select("photo")
+      // .select("photo")
       .limit(12)
       .sort({ createdAt: -1 });
     res.status(200).send({
@@ -95,7 +95,7 @@ export const productPhotoController = async (req, res) => {
 
     if (product.photo.data) {
       res.set("Content-Type", product.photo.contentType);
-      return res.status(200).send(product.photo.send);
+      return res.status(200).send(product.photo.data);
     }
   } catch (error) {
     console.log(error);
@@ -171,6 +171,24 @@ export const updateProductController = async (req, res) => {
       success: false,
       message: "Error While Getting Photo",
       error: error.message,
+    });
+  }
+};
+
+export const productFilterController = async (req, res) => {
+  try {
+    const { checked, radio } = req.body;
+    let args = {};
+    if (checked.length > 0) args.category = checked;
+    if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
+    const products = await ProductModel.find(args);
+    res.status(200).send({ success: true, products });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "error while filtering products",
+      error,
     });
   }
 };
