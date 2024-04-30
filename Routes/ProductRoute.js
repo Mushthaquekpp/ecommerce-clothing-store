@@ -9,6 +9,7 @@ import {
   productFilterController,
   productListController,
   productPhotoController,
+  searchProductController,
   updateProductController,
 } from "../controllers/ProductController.js";
 import formidable from "express-formidable";
@@ -46,6 +47,8 @@ productRoute.put(
   formidable(),
   updateProductController
 );
+//product search
+productRoute.get("/search/:keyword", searchProductController);
 
 //count product
 productRoute.get("/product-count", productCountController);

@@ -284,3 +284,23 @@ export const productListController = async (req, res) => {
       .send({ success: false, message: "error in per page ctrl", error });
   }
 };
+
+//product search
+
+export const searchProductController = async (req, res) => {
+  try {
+    const { keyword } = req.params;
+    const results = await ProductModel.find({
+      $or: [
+        { name: { $regex: keyword, $options: "i" } },
+        { description: { $regex: keyword, $options: "i" } },
+      ],
+    }).select("-photo");
+    req.json(results);
+  } catch (error) {
+    console.log(error);
+    res
+      .status(400)
+      .send({ success: false, message: "Error in Search Product Api", error });
+  }
+};
