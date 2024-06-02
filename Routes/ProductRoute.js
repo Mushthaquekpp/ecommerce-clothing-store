@@ -9,10 +9,12 @@ import {
   productFilterController,
   productListController,
   productPhotoController,
+  relatedProductController,
   searchProductController,
   updateProductController,
 } from "../controllers/ProductController.js";
 import formidable from "express-formidable";
+import categoryProductController from "../controllers/categoryProductController.js";
 const productRoute = express.Router();
 // product creation
 productRoute.post(
@@ -56,5 +58,13 @@ productRoute.get("/product-count", productCountController);
 //product per page
 
 productRoute.get("/product-list/:page", productListController);
+
+//category wise products
+
+productRoute.get("/product-category/:slug", categoryProductController);
+
+//similar products
+
+productRoute.get("/related-product/:pid/:cid", relatedProductController);
 
 export default productRoute;

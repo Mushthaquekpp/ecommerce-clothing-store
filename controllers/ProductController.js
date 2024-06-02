@@ -76,9 +76,9 @@ export const getProductController = async (req, res) => {
 
 export const getOneProductController = async (req, res) => {
   try {
-    const products = await ProductModel.findOne({ slug: req.params.slug })
-      .populate("category")
-      .select("photo");
+    const products = await ProductModel.findOne({
+      slug: req.params.slug,
+    }).populate("category");
     res.status(200).send({ success: true, message: "products", products });
   } catch (error) {
     console.log(error);
@@ -109,76 +109,21 @@ export const productPhotoController = async (req, res) => {
 export const deleteProductController = async (req, res) => {
   try {
     const { pid } = req.params;
-    const product = await ProductModel.findByIdAndDelete(pid);
+    const products = await ProductModel.findByIdAndDelete(pid);
     res.status(200).send({
       success: true,
       message: "Product Deleted Successfully",
-      product,
+      products,
     });
   } catch (error) {
     console.log(error);
-    res.staus(500).send({
+    res.status(500).send({
       success: false,
       message: "Error While Getting Photo",
       error: error.message,
     });
   }
 };
-
-// export const updateProductController = async (req, res) => {
-//   try {
-//     const { name, description, price, category, quantity, shipping } =
-//       req.fields;
-//     const { photo } = req.files;
-
-//     switch (true) {
-//       case !name:
-//         return res.status(500).send({ error: "Name is Required" });
-
-//       case !description:
-//         return res.status(500).send({ error: "Description is Required" });
-
-//       case !price:
-//         return res.status(500).send({ error: "Price is Required" });
-
-//       case !category:
-//         return res.status(500).send({ error: "Category is Required" });
-
-//       case !quantity:
-//         return res.status(500).send({ error: "Quantity is Required" });
-
-//       case photo && photo.size > 1000000:
-//         return res.status(500).send({
-//           error: "Photo is Required and should be less than 1mb",
-//         });
-//     }
-//     const product = await ProductModel.findByIdAndUpdate(
-//       req.params.pid,
-//       {
-//         ...req.fields,
-//         slug: slugify(name)},
-
-//       { new: true }
-//     );
-//     if (photo) {
-//       product.photo.data = fs.readFileSync(photo.path);
-//       product.photo.contentType = photo.Type;
-//     }
-//     await product.save();
-//     res.status(200).send({
-//       success: true,
-//       message: "product updated successfully",
-//       product,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     res.staus(500).send({
-//       success: false,
-//       message: "Error While Getting Photo",
-//       error: error.message,
-//     });
-//   }
-// };
 
 export const updateProductController = async (req, res) => {
   try {
@@ -236,9 +181,9 @@ export const productFilterController = async (req, res) => {
     if (checked.length > 0) args.category = checked;
     if (radio.length === 2) {
       args.price = { $gte: parseInt(radio[0]), $lte: parseInt(radio[1]) };
-      const products = await ProductModel.find(args);
-      res.status(200).send({ success: true, products });
     }
+    const products = await ProductModel.find(args);
+    res.status(200).send({ success: true, products });
   } catch (error) {
     console.log(error);
     res.status(400).send({
@@ -302,5 +247,32 @@ export const searchProductController = async (req, res) => {
     res
       .status(400)
       .send({ success: false, message: "Error in Search Product Api", error });
+  }
+};
+
+//similar products
+
+export const relatedProductController = async (req, res) => {
+  try {
+    const { pid, cid } = req.params;
+    const products = await ProductModel.find({
+      category: cid,
+      _id: { $ne: pid },
+    })
+      .select("-photo")
+      .limit(3)
+      .populate("category");
+    res.status(200).send({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(400).send({
+      success: false,
+      message: "error while getting related products",
+      error,
+    });
   }
 };
