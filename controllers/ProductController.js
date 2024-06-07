@@ -1,6 +1,64 @@
 import slugify from "slugify";
 import fs from "fs";
 import ProductModel from "../models/ProductModel.js";
+import dotenv from "dotenv";
+import braintree from "braintree";
+
+dotenv.config();
+const gateway = new braintree.BraintreeGateway({
+  environment: braintree.Environment.Sandbox,
+  merchantId: process.env.BRAINTREE_MERCHANT_ID,
+  publicId: process.env.BRAINTREE_PUBLIC_KEY,
+  privateId: process.env.BRAINTREE_PRIVATE_KEY,
+});
+
+export const braintreePaymentController = async (req, res) => {
+  try {
+    const { nonce, cart } = req.body;
+    let total = 0;
+    cart.map((i) => {
+      total += i.price;
+    });
+    let newTransaction = gateway.transaction.sale(
+      {
+        amount: total,
+        paymentMethodNonce: nonce,
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      function (error, result) {
+        if (result) {
+          const order = new orderModel({
+            products: cart,
+            payment: result,
+            buyer: req.user._id,
+          }).save();
+          res.json({ ok: true });
+        } else {
+          res.status(500).send(error);
+        }
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const braintreeTokenController = async (req, res) => {
+  try {
+    gateway.clientToken.generate({}, function (error, response) {
+      if (error) {
+        res.status(500).send(error);
+      } else {
+        res.send(response);
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const addProductController = async (req, res) => {
   try {
     const { name, description, price, category, quantity, shipping } =
@@ -241,7 +299,7 @@ export const searchProductController = async (req, res) => {
         { description: { $regex: keyword, $options: "i" } },
       ],
     }).select("-photo");
-    req.json(results);
+    res.json(results);
   } catch (error) {
     console.log(error);
     res

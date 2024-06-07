@@ -23,5 +23,5 @@ route.get("/admin-auth", requireSignIn, (req, res) => {
 
 route.post("/forgot-password", forgetPasswordController);
 
-route.put("/profile", updateProfileController);
+route.put("/profile", requireSignIn, updateProfileController);
 export default route;
