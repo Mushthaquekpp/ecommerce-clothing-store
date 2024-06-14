@@ -1,6 +1,7 @@
 import slugify from "slugify";
 import fs from "fs";
 import ProductModel from "../models/ProductModel.js";
+import orderModel from "../models/orderModel.js";
 import dotenv from "dotenv";
 import braintree from "braintree";
 
@@ -8,8 +9,8 @@ dotenv.config();
 const gateway = new braintree.BraintreeGateway({
   environment: braintree.Environment.Sandbox,
   merchantId: process.env.BRAINTREE_MERCHANT_ID,
-  publicId: process.env.BRAINTREE_PUBLIC_KEY,
-  privateId: process.env.BRAINTREE_PRIVATE_KEY,
+  publicKey: process.env.BRAINTREE_PUBLIC_KEY,
+  privateKey: process.env.BRAINTREE_PRIVATE_KEY,
 });
 
 export const braintreePaymentController = async (req, res) => {

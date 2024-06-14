@@ -1,6 +1,8 @@
 import userModel from "../models/userModel.js";
 import { comparePassword, hashPassword } from "../helpers/authHelpers.js";
 import JWT from "jsonwebtoken";
+import orderModel from "../models/orderModel.js";
+
 export const regController = async (req, res) => {
   try {
     const { name, email, password, phone, address, answer } = req.body; //data passed to body
@@ -159,5 +161,25 @@ export const updateProfileController = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({ success: false, message: "something went wrong" });
+  }
+};
+
+export const orderStatusController = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    const orders = await orderModel.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    );
+    res.json(orders);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "error while updating orders",
+      error,
+    });
   }
 };
